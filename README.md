@@ -55,3 +55,5 @@ Note that 'fixation' DIFFERS depending on the inputs of sa, sb.
 If sa >= sb (interference case) then 'fixation' counts as fixation of second allele on any genetic background.
 If sa < sb (replacement case) then 'fixation' only considers fixation of second allele with neutral haplotype
 (I.e. where the 'less fit' neutral allele at locus A fixes, instead of selected allele).
+
+Also note that if sa < sb then simulation stops if allele B is lost, in order to shorten simulations.
