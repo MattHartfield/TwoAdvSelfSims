@@ -72,8 +72,7 @@ If sa < sb (replacement case) then 'fixation' only considers fixation of second 
 void geninit(double *geninit, double FIS, const gsl_rng *r);
 void selection(double *geninit);
 void reproduction(double *geninit);
-unsigned int hcheck(double *geninit, double *haps, unsigned int *hf);
-void geninit2(double *geninit);
+unsigned int hcheck(double *geninit, double *haps, unsigned int *hf, unsigned int stype);
 
 /* Global variable declaration */
 unsigned int N = 0;		/* Pop size */
@@ -89,7 +88,7 @@ double pee = 0;			/* Freq of initial sweep */
 int main(int argc, char *argv[]){
 	unsigned int i; 				/* A counter */
 	unsigned int reps;				/* Length of simulation (no. of introductions of neutral site) */
-	unsigned int stype;				/* What type of sim (replacement or hitch-hiking)? */
+	unsigned int stype = 0;				/* What type of sim (replacement or hitch-hiking)? */
 	unsigned int nsfix = 0;			/* sims where target type fixed */
 	unsigned int nstot = 0;			/* total sims ran */	
 	unsigned int gens = 0;			/* Number gens elapsed */
@@ -100,6 +99,8 @@ int main(int argc, char *argv[]){
 	double StdFix = 0;				/* Standard Fixation prob if unlinked */
 	double citop = 0;
 	double cibot = 0;
+	double nsfix2 = 0;			
+	double nstot2 = 0;			
 	char selfchar[10];
 	char recchar[15];
 	char hchar[10];
@@ -163,10 +164,10 @@ int main(int argc, char *argv[]){
 		while(isfin == 0){
     		/* Selection routine */
     		selection(genotype);
-    		    	
+    		
 	    	/* Reproduction routine */
     		reproduction(genotype);
-       	
+       		
     		/* Sampling based on new frequencies */
 	       	gsl_ran_multinomial(r,10,N,genotype,gensamp);
        		for(i = 0; i < 10; i++){
@@ -174,24 +175,31 @@ int main(int argc, char *argv[]){
 	       	}
 	       	
 	       	gens++;
-	       	isfin = hcheck(genotype, haps, &hf);
+	       	isfin = hcheck(genotype, haps, &hf, stype);
        	}
        	
-       	(*(pfix + hf))++;
-       	(*(tfix + hf)) += gens;
-       	if(stype == 0){
-       		nsfix += (*(haps + 2) + *(haps + 3));
-       	}else if(stype == 1){
-       		nsfix += (*(haps + 2));
+       	if(isfin == 1){
+       		(*(pfix + hf))++;
+    	  	(*(tfix + hf)) += gens;
+	       	if(stype == 0){
+       			nsfix += (*(haps + 2) + *(haps + 3));
+       		}else if(stype == 1){
+    	   		nsfix += (*(haps + 2));
+	       	}
        	}
     
 	}	/* End of simulation */
 	
 	pf = nsfix/(1.0*nstot);
 	StdFix = 2*sb*((hb+FIS-hb*FIS)/(1+FIS));		/* Fix prob of new allele if unlinked */
-	citop = gsl_cdf_beta_Pinv(0.975, (nsfix+1), (nstot-nsfix))/(1.0*StdFix);
-	cibot = gsl_cdf_beta_Pinv(0.025, (nsfix+1), (nstot-nsfix+1))/(1.0*StdFix);
-
+	
+	nstot2 = nstot + 3.84;
+	nsfix2 = (1.0/(nstot2))*(nsfix + (3.84/2.0));
+	citop = nsfix2 + 1.96*sqrt((1.0/(nstot2))*nsfix2*(1.0-nsfix2));
+	cibot = nsfix2 - 1.96*sqrt((1.0/(nstot2))*nsfix2*(1.0-nsfix2));	
+	citop = citop/(1.0*StdFix);
+	cibot = cibot/(1.0*StdFix);	
+	
 	/* Printing solutions to file */
 	/* First, converting values to strings */
     sprintf(selfchar, "%0.2lf",self);
@@ -278,23 +286,6 @@ void geninit(double *geninit, double FIS, const gsl_rng *r){
 
 }	/* End of gen initiation routine */
 
-/* Initialising genotypes */
-void geninit2(double *geninit){
-	
-	/* First initialise baseline freqs */
-	*(geninit + 0) = 0.1;
-	*(geninit + 1) = 0.1;
-	*(geninit + 2) = 0.1;
-	*(geninit + 3) = 0.1;
-	*(geninit + 4) = 0.1;
-	*(geninit + 5) = 0.1;
-	*(geninit + 6) = 0.1;
-	*(geninit + 7) = 0.1;
-	*(geninit + 8) = 0.1;
-	*(geninit + 9) = 0.1;
-	
-}	/* End of gen initiation routine */
-
 /* Selection routine */
 void selection(double *geninit){
 	/* Fitness of each genotype */
@@ -369,7 +360,7 @@ void reproduction(double *geninit){
 }	/* End of reproduction routine */
 
 /* Has any allele fixed or not? */
-unsigned int hcheck(double *geninit, double *haps, unsigned int *hf){
+unsigned int hcheck(double *geninit, double *haps, unsigned int *hf, unsigned int stype){
 	/* Fed-in genotype frequencies (for ease of programming) */
 	double g11s, g12s, g13s, g14s, g22s, g23s, g24s, g33s, g34s, g44s;
 	unsigned int retval = 0;
@@ -409,6 +400,11 @@ unsigned int hcheck(double *geninit, double *haps, unsigned int *hf){
 	else if(*(haps + 3) == 1){
 		retval = 1;
 		*hf = 3;
+	}else if(stype == 1){
+		if( (*(haps + 2) + *(haps + 3) ) == 0 ){
+			retval = 2;
+			*hf = 0;
+		}
 	}
 	
 	return retval;
