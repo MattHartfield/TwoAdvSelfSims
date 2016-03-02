@@ -88,7 +88,7 @@ double pee = 0;			/* Freq of initial sweep */
 int main(int argc, char *argv[]){
 	unsigned int i; 				/* A counter */
 	unsigned int reps;				/* Length of simulation (no. of introductions of neutral site) */
-	unsigned int stype = 0;				/* What type of sim (replacement or hitch-hiking)? */
+	unsigned int stype = 0;			/* What type of sim (replacement or hitch-hiking)? */
 	unsigned int nsfix = 0;			/* sims where target type fixed */
 	unsigned int nstot = 0;			/* total sims ran */	
 	unsigned int gens = 0;			/* Number gens elapsed */
@@ -106,7 +106,7 @@ int main(int argc, char *argv[]){
 	char hchar[10];
 	char pchar[10];
 	char fname[64];
-	FILE *ofp_tr;					/* Pointer for tree output */
+	FILE *ofp_tr;
 	
 	/* GSL random number definitions */
 	const gsl_rng_type * T; 
@@ -203,7 +203,7 @@ int main(int argc, char *argv[]){
 	/* Printing solutions to file */
 	/* First, converting values to strings */
     sprintf(selfchar, "%0.2lf",self);
-    sprintf(recchar, "%0.5lf",rec);
+    sprintf(recchar, "%0.7lf",rec);
     sprintf(hchar, "%0.3lf",ha);
     sprintf(pchar, "%0.5lf",pee);            
 
