@@ -23,7 +23,7 @@ Where:
 - sa, sb is selection coefficient of the original, introduced beneficial allele
 - p is the initial frequency of the first beneficial allele (when the second is introduced)
 - reps is how many times the second allele should FIX before simulation stops 
-(the number of actual runs is greater due to stochastic loss of second allele)
+(the number of actual runs is greater due to stochastic loss of second allele).
 
 Note that haplotypes are defined as:  
 x1 = ab  
